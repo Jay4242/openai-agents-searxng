@@ -6,6 +6,7 @@ import shlex
 import re
 import logging
 from bs4 import BeautifulSoup
+import os
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -22,15 +23,17 @@ ch.setFormatter(formatter)
 # Add the handler to the logger
 logger.addHandler(ch)
 
+SEARXNG_BASE_URL = os.environ.get("SEARXNG_BASE_URL", "http://searx.lan")
+
 
 async def searxng_search(ctx: RunContextWrapper[Any], query: str) -> list[dict[str, str]]:
-    """Searches the web using a SearxNG instance, mirroring the URL construction and HTML stripping from llm-websearch.bash using regex.
+    """Searches the web using a SearxNG instance.
 
     Args:
         query: The search query.
     """
     logger.info(f"Starting searxng_search with query: {query}")
-    base_url = "http://searx.lan"
+    base_url = SEARXNG_BASE_URL
     search_url = f"{base_url}/search"
     phrase = re.sub(r'\s+', '+', query)  # Replace spaces with plus signs
     url = f"{search_url}?q={phrase}&language=auto&time_range=&safesearch=0&categories=general"
@@ -100,7 +103,7 @@ async def searxng_search(ctx: RunContextWrapper[Any], query: str) -> list[dict[s
 
 searxng_tool = FunctionTool(
     name="searxng_search",
-    description="Searches the web using a SearxNG instance, mirroring the URL construction and HTML stripping from llm-websearch.bash using regex.",
+    description="Searches the web using a SearxNG instance.",
     params_json_schema={
         "type": "object",
         "properties": {
